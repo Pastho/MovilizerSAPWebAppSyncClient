@@ -1,6 +1,8 @@
 package view.general;
 
 import controller.FileController;
+import controls.ProjectStructure;
+import model.ProjectFile;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -15,10 +17,10 @@ public class GeneralView extends JPanel implements ActionListener {
 
     // define page components
     private JFrame frame;
-    private JPanel mainPanel, treePanel, detailsPanel;
+    private JPanel mainPanel, treePanel, detailsPanel, detailsNotesPanel, detailsActionsPanel;
     private JMenuBar menuBar;
     private JMenu filesMenu, settingsMenu;
-    private JTree projectStructure;
+    private ProjectStructure projectStructure;
 
     public GeneralView(FileController fileController) {
         super();
@@ -34,8 +36,9 @@ public class GeneralView extends JPanel implements ActionListener {
     private void initComponents() {
 
         // build the frame
-        frame = new JFrame("Menu");
-        frame.setSize(600, 400);
+        frame = new JFrame("Movilizer SAP Connector WebApp Client");
+        frame.setSize(new Dimension(600, 400));
+        frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setUpMenu();
@@ -77,11 +80,12 @@ public class GeneralView extends JPanel implements ActionListener {
         // create the tree panel
         treePanel = new JPanel(new GridLayout(1, 1));
 
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Please select a project");
-        projectStructure = new JTree(rootNode);
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ProjectFile("Please select a project"));
+        projectStructure = new ProjectStructure(rootNode);
         JScrollPane treeView = new JScrollPane(projectStructure);
-        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 10));
+        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5));
         treePanel.add(treeView);
+        treePanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 1));
 
         mainPanel.add(treePanel, BorderLayout.WEST);
     }
@@ -93,19 +97,82 @@ public class GeneralView extends JPanel implements ActionListener {
         // create the details panel
         detailsPanel = new JPanel(new GridLayout(2, 1));
 
-        JPanel detailsNotesPanel = new JPanel();
-        detailsNotesPanel.setBackground(new Color(255, 178, 0));
+        setUpDetailsNotePanel();
         detailsPanel.add(detailsNotesPanel);
-
-        JPanel detailsActionsPanel = new JPanel(new BorderLayout());
-        detailsActionsPanel.setBackground(new Color(0, 221, 74));
-
-        JButton sendButton = new JButton("Send WebApp");
-        detailsActionsPanel.add(sendButton, BorderLayout.SOUTH);
-
+        setUpDetailsNoteActionsPanel();
         detailsPanel.add(detailsActionsPanel);
 
         mainPanel.add(detailsPanel, BorderLayout.EAST);
+    }
+
+    /**
+     * Set up the details note panel
+     */
+    private void setUpDetailsNotePanel() {
+        detailsNotesPanel = new JPanel();
+        detailsNotesPanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 1));
+
+        // define group layout for details notes
+        GroupLayout layout = new GroupLayout(detailsNotesPanel);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        JLabel projectTitle = new JLabel("Project:");
+        JLabel projectValue = new JLabel("-");
+        projectStructure.setProjectValueLabel(projectValue);
+        projectValue.setFont(projectValue.getFont().deriveFont(Font.PLAIN));
+
+        JLabel projectSizeTitle = new JLabel("Size:");
+        JLabel projectSizeValue = new JLabel("-");
+        projectStructure.setProjectSizeValueLabel(projectValue);
+        projectSizeValue.setFont(projectSizeValue.getFont().deriveFont(Font.PLAIN));
+
+        JLabel projectDateTitle = new JLabel("Date of Change:");
+        JLabel projectDateValue = new JLabel("-");
+        projectStructure.setProjectDateValueLabel(projectDateValue);
+        projectDateValue.setFont(projectDateValue.getFont().deriveFont(Font.PLAIN));
+
+        layout.setHorizontalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                        .addComponent(projectTitle)
+                                        .addComponent(projectSizeTitle)
+                                        .addComponent(projectDateTitle)
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addComponent(projectValue)
+                                        .addComponent(projectSizeValue)
+                                        .addComponent(projectDateValue)
+                        )
+        );
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(projectTitle)
+                                        .addComponent(projectValue)
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(projectSizeTitle)
+                                        .addComponent(projectSizeValue)
+                        )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(projectDateTitle)
+                                        .addComponent(projectDateValue)
+                        )
+        );
+
+        detailsNotesPanel.setLayout(layout);
+    }
+
+    /**
+     * Set up the details action panel
+     */
+    private void setUpDetailsNoteActionsPanel() {
+        detailsActionsPanel = new JPanel(new GridLayout(1, 1));
+
+        JButton sendButton = new JButton("Send WebApp");
+        detailsActionsPanel.add(sendButton);
     }
 
     /**
@@ -144,6 +211,11 @@ public class GeneralView extends JPanel implements ActionListener {
         menuItem.addActionListener(this);
         settingsMenu.add(menuItem);
 
+        menuItem = new JMenuItem("Transportrequest");
+        menuItem.setActionCommand("menuItem-settings-Transportrequest");
+        menuItem.addActionListener(this);
+        settingsMenu.add(menuItem);
+
         menuBar.add(settingsMenu);
     }
 
@@ -152,16 +224,17 @@ public class GeneralView extends JPanel implements ActionListener {
         // handle the incoming events
         switch (e.getActionCommand()) {
             case "menuItem-file-openFolder":
-                System.out.println("Open Folder was clicked");
-
+                System.out.println("clicked: menuItem-file-openFolder");
                 this.fileController.openFolder(this, projectStructure);
-
                 break;
             case "menuItem-settings-SAPConnection":
-                System.out.println("SAP Connection was clicked");
+                System.out.println("clicked: menuItem-settings-SAPConnection");
+                break;
+            case "menuItem-settings-Transportrequest":
+                System.out.println("clicked: menuItem-settings-Transportrequest");
                 break;
             default:
-                System.out.println("Couldn't fetch any event handler");
+                System.err.println("error: on action handler was found");
         }
 
     }
