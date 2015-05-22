@@ -21,15 +21,6 @@ public class FileController {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             changeProjectStructureFromProject(fileChooser.getSelectedFile(), projectStructure);
         }
-
-        /*
-        RestTemplate restTemplate = new RestTemplate();
-        Page page = restTemplate.getForObject("http://graph.facebook.com/movilizer", Page.class);
-        System.out.println("Name:    " + page.getName());
-        System.out.println("About:   " + page.getAbout());
-        System.out.println("Phone:   " + page.getPhone());
-        System.out.println("Website: " + page.getWebsite());
-        */
     }
 
     /**
@@ -44,7 +35,7 @@ public class FileController {
         projectStructure.setUpNewProjectStructure(dictionary);
 
         // update model
-        listFilesOfFolder(dictionary, projectStructure.getRootNode(),  projectStructure.getTreeModel());
+        listFilesOfFolder(dictionary, projectStructure.getRootNode(), projectStructure.getTreeModel());
 
         // reload the projects structure to refresh the UIs
         projectStructure.reload();
