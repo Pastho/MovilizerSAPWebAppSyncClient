@@ -1,9 +1,15 @@
 package view;
 
+import controller.FileController;
+import model.SAPConnection;
+import service.MovilizerWebAppSyncHandler;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class LoginView {
+public class LoginView implements ActionListener {
 
     private JFrame frame;
     private JPanel mainPanel;
@@ -43,8 +49,15 @@ public class LoginView {
         JLabel projectSizeTitle = new JLabel("Password:");
         passwordTextField = new JPasswordField();
 
-        JButton buttonSend = new JButton("Send");
+        // button send
+        JButton buttonSend = new JButton("Login");
+        buttonSend.setActionCommand("login");
+        buttonSend.addActionListener(this);
+
+        // button cancel
         JButton buttonCancel = new JButton("Cancel");
+        buttonCancel.setActionCommand("cancel");
+        buttonCancel.addActionListener(this);
 
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
@@ -80,4 +93,25 @@ public class LoginView {
         mainPanel.setLayout(layout);
     }
 
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        switch (event.getActionCommand()) {
+            case "login":
+                System.out.println("clicked: login");
+
+                // TODO Login
+
+                // if the login is OK proceed with the general view
+                frame.dispose();
+                SAPConnection sapConnection = new SAPConnection("http://example.com", "testuser", "testpassword");
+                new GeneralView(new FileController(), new MovilizerWebAppSyncHandler(sapConnection));
+
+                break;
+            case "cancel":
+                System.out.println("clicked: login");
+                break;
+            default:
+                System.err.println("error: on action handler was found");
+        }
+    }
 }

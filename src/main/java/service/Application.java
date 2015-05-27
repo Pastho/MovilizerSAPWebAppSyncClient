@@ -1,8 +1,6 @@
 package service;
 
-import controller.FileController;
-import model.SAPConnection;
-import view.GeneralView;
+import view.LoginView;
 
 public class Application {
 
@@ -17,11 +15,8 @@ public class Application {
         System.out.println("Website: " + page.getWebsite());
         */
 
-        // read the stored SAP Connection settings
-        SAPConnection sapConnection = new SAPConnection("http://example.com");
-
-        // start the GUI
-        new GeneralView(new FileController(), new MovilizerWebAppSyncHandler(sapConnection));
+        // TODO login
+        new LoginView();
     }
 
 }

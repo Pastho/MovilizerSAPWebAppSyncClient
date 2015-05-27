@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Page {
 
+    /*
     private String name;
     private String about;
     private String phone;
@@ -29,5 +30,5 @@ public class Page {
     public String getWebsite() {
         return website;
     }
-
+    */
 }

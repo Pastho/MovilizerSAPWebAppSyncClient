@@ -19,28 +19,29 @@ public class FileController {
         int returnValue = fileChooser.showOpenDialog(panel);
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
-            changeProjectStructureFromProject(fileChooser.getSelectedFile(), projectStructure);
+            projectStructure.setProjectFile(new ProjectFile(fileChooser.getSelectedFile().getName(), fileChooser.getSelectedFile()));
+            changeProjectStructureFromProject(projectStructure);
         }
     }
 
     /**
      * This function changes the structure of the project tree.
      *
-     * @param dictionary       The selected dictionary
      * @param projectStructure The project structure which should be updated
      */
-    private void changeProjectStructureFromProject(File dictionary, ProjectStructure projectStructure) {
+    private void changeProjectStructureFromProject(ProjectStructure projectStructure) {
+        File projectFile = projectStructure.getProjectFile().getOriginalFile();
 
         // set up the new project structure
-        projectStructure.setUpNewProjectStructure(dictionary);
+        projectStructure.setUpNewProjectStructure(projectFile);
 
         // update model
-        listFilesOfFolder(dictionary, projectStructure.getRootNode(), projectStructure.getTreeModel());
+        listFilesOfFolder(projectFile, projectStructure.getRootNode(), projectStructure.getTreeModel());
 
         // reload the projects structure to refresh the UIs
         projectStructure.reload();
 
-        System.out.println("folder: " + dictionary.getName() + " was opened as a new project structure");
+        System.out.println("folder: " + projectFile.getName() + " was opened as a new project structure");
     }
 
     /**
@@ -55,7 +56,7 @@ public class FileController {
             for (File file : dictionary.listFiles()) {
                 try {
                     if (file.canRead()) {
-                        DefaultMutableTreeNode currentNode = new DefaultMutableTreeNode(new ProjectFile(file.getName(), "", file));
+                        DefaultMutableTreeNode currentNode = new DefaultMutableTreeNode(new ProjectFile(file.getName(), file));
                         treeModel.insertNodeInto(currentNode, rootNode, rootNode.getChildCount());
                         if (file.isDirectory()) listFilesOfFolder(file, currentNode, treeModel);
                     }

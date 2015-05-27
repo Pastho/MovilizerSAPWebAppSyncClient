@@ -1,11 +1,8 @@
 package view;
 
 import controller.FileController;
-import controls.ProjectStructure;
-import controls.SAPConnectionPanel;
-import controls.SAPTransportPanel;
+import controls.*;
 import model.ProjectFile;
-import model.SAPConnection;
 import service.MovilizerWebAppSyncHandler;
 
 import javax.swing.*;
@@ -22,10 +19,8 @@ public class GeneralView extends JPanel implements ActionListener {
 
     // define page components
     private JFrame frame;
-    private JPanel mainPanel, sapConnectionPanel, sapTransportPanel, treePanel, detailsPanel, detailsNotesPanel, detailsActionsPanel;
-    private JTextField sapSystemURLValue;
-    private JMenuBar menuBar;
-    private JMenu filesMenu, settingsMenu;
+    private JPanel mainPanel, sapTransportPanel, treePanel, detailsPanel;
+    private SAPConnectionPanel sapConnectionPanel;
     private ProjectStructure projectStructure;
 
     public GeneralView(FileController fileController, MovilizerWebAppSyncHandler movilizerWebAppSyncHandler) {
@@ -48,7 +43,7 @@ public class GeneralView extends JPanel implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        setUpMenu();
+        frame.setJMenuBar(new CustomMenuBar(this));
         setUpMainPanel();
         setUpSAPConnectionPanel();
         setUpSAPTransportPanel();
@@ -60,20 +55,22 @@ public class GeneralView extends JPanel implements ActionListener {
         frame.setVisible(true);
     }
 
+    /**
+     * Set up the SAP transport panel which contains the controls to handle with the SAP TMS.
+     */
     private void setUpSAPTransportPanel() {
         sapTransportPanel = new SAPTransportPanel(this, movilizerWebAppSyncHandler);
         sapTransportPanel.setPreferredSize(new Dimension(600, 400));
     }
 
     /**
-     * Set up the menu which contains several sub menus.
+     * Set up the SAP connection panel which contains two sub panels to maintain the connection to the SAP system.
      */
-    private void setUpMenu() {
-        menuBar = new JMenuBar();
-        setUpFileMenu();
-        setUpSettingsMenu();
-        frame.setJMenuBar(menuBar);
+    private void setUpSAPConnectionPanel() {
+        sapConnectionPanel = new SAPConnectionPanel(this, movilizerWebAppSyncHandler);
+        sapConnectionPanel.setPreferredSize(new Dimension(600, 400));
     }
+
 
     /**
      * Set up the main panel by adding all the sub panels.
@@ -85,15 +82,7 @@ public class GeneralView extends JPanel implements ActionListener {
         mainPanel.setPreferredSize(new Dimension(600, 400));
 
         setUpTreePanel();
-        setUpDetailsPanel();
-    }
-
-    /**
-     * Set up the SAP connection panel which contains two sub panels to maintain the connection to the SAP system.
-     */
-    private void setUpSAPConnectionPanel() {
-        sapConnectionPanel = new SAPConnectionPanel(this, movilizerWebAppSyncHandler);
-        sapConnectionPanel.setPreferredSize(new Dimension(600, 400));
+        mainPanel.add(new DetailsPanel(this, new GridLayout(2, 1), projectStructure), BorderLayout.EAST);
     }
 
     /**
@@ -106,143 +95,10 @@ public class GeneralView extends JPanel implements ActionListener {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ProjectFile("Please select a project"));
         projectStructure = new ProjectStructure(rootNode);
         JScrollPane treeView = new JScrollPane(projectStructure);
-        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5));
+        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5)); // create an intend
         treePanel.add(treeView);
 
         mainPanel.add(treePanel, BorderLayout.WEST);
-    }
-
-    /**
-     * Set up the details panel which contains two sub panels.
-     */
-    private void setUpDetailsPanel() {
-        detailsPanel = new JPanel(new GridLayout(2, 1));
-
-        setUpDetailsNotePanel();
-        detailsPanel.add(detailsNotesPanel);
-        setUpDetailsNoteActionsPanel();
-        detailsPanel.add(detailsActionsPanel);
-
-        mainPanel.add(detailsPanel, BorderLayout.EAST);
-    }
-
-    /**
-     * Set up the details note panel
-     */
-    private void setUpDetailsNotePanel() {
-        detailsNotesPanel = new JPanel();
-
-        // define group layout for details notes
-        GroupLayout layout = new GroupLayout(detailsNotesPanel);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-
-        JLabel projectTitle = new JLabel("Project:");
-        JLabel projectValue = new JLabel("-");
-        projectStructure.setProjectValueLabel(projectValue);
-        projectValue.setFont(projectValue.getFont().deriveFont(Font.PLAIN));
-
-        JLabel projectSizeTitle = new JLabel("Size:");
-        JLabel projectSizeValue = new JLabel("-");
-        projectStructure.setProjectSizeValueLabel(projectValue);
-        projectSizeValue.setFont(projectSizeValue.getFont().deriveFont(Font.PLAIN));
-
-        JLabel projectDateTitle = new JLabel("Date of Change:");
-        JLabel projectDateValue = new JLabel("-");
-        projectStructure.setProjectDateValueLabel(projectDateValue);
-        projectDateValue.setFont(projectDateValue.getFont().deriveFont(Font.PLAIN));
-
-        layout.setHorizontalGroup(
-                layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                        .addComponent(projectTitle)
-                                        .addComponent(projectSizeTitle)
-                                        .addComponent(projectDateTitle)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(projectValue)
-                                        .addComponent(projectSizeValue)
-                                        .addComponent(projectDateValue)
-                        )
-        );
-
-        layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(projectTitle)
-                                        .addComponent(projectValue)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(projectSizeTitle)
-                                        .addComponent(projectSizeValue)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(projectDateTitle)
-                                        .addComponent(projectDateValue)
-                        )
-        );
-
-        detailsNotesPanel.setLayout(layout);
-    }
-
-    /**
-     * Set up the details action panel
-     */
-    private void setUpDetailsNoteActionsPanel() {
-        detailsActionsPanel = new JPanel(new GridLayout(1, 1));
-
-        JButton sendButton = new JButton("Send WebApp");
-        sendButton.setActionCommand("button-send-webapp");
-        sendButton.addActionListener(this);
-        detailsActionsPanel.add(sendButton);
-    }
-
-    /**
-     * Set up the file menu.
-     */
-    private void setUpFileMenu() {
-        // initialize the basic components
-        JMenuItem menuItem;
-
-        // create the file menu
-        filesMenu = new JMenu("File");
-
-        // build the file menu items
-        menuItem = new JMenuItem("Open Folder");
-        menuItem.setActionCommand("menuItem-file-openFolder");
-        menuItem.addActionListener(this);
-        filesMenu.add(menuItem);
-
-        menuItem = new JMenuItem("Show Project");
-        menuItem.setActionCommand("menuItem-file-showProject");
-        menuItem.addActionListener(this);
-        filesMenu.add(menuItem);
-
-        menuBar.add(filesMenu);
-    }
-
-    /**
-     * Set up the settings menu.
-     */
-    private void setUpSettingsMenu() {
-        // initialize the basic components
-        JMenuItem menuItem;
-
-        // create the settings menu
-        settingsMenu = new JMenu("Settings");
-
-        // build the settings menu
-        menuItem = new JMenuItem("SAP Connection");
-        menuItem.setActionCommand("menuItem-settings-SAPConnection");
-        menuItem.addActionListener(this);
-        settingsMenu.add(menuItem);
-
-        menuItem = new JMenuItem("Transportrequest");
-        menuItem.setActionCommand("menuItem-settings-Transportrequest");
-        menuItem.addActionListener(this);
-        settingsMenu.add(menuItem);
-
-        menuBar.add(settingsMenu);
     }
 
     /**
@@ -276,9 +132,8 @@ public class GeneralView extends JPanel implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        // handle the incoming events
-        switch (e.getActionCommand()) {
+    public void actionPerformed(ActionEvent event) {
+        switch (event.getActionCommand()) {
             case "menuItem-file-openFolder":
                 System.out.println("clicked: menuItem-file-openFolder");
                 this.fileController.openFolder(this, projectStructure);
@@ -292,8 +147,7 @@ public class GeneralView extends JPanel implements ActionListener {
                 break;
             case "button-save-sapConnection":
                 movilizerWebAppSyncHandler.getSapConnection()
-                        .updateSAPConnection(new SAPConnection(sapSystemURLValue.getText()));
-                showSAPConnectionPanel();
+                        .updateSAPConnection(sapConnectionPanel.getSAPConnection());
                 System.out.println("clicked: button-save-sapConnection");
                 break;
             case "button-cancel-sapConnection":
@@ -305,13 +159,11 @@ public class GeneralView extends JPanel implements ActionListener {
                 System.out.println("clicked: menuItem-settings-Transportrequest");
                 break;
             case "button-send-webapp":
-                new LoginView();
                 System.out.print("clicked: button-send-webapp");
                 movilizerWebAppSyncHandler.putWebApp("THIS_IS_AN_EXAMPLE");
                 break;
             default:
                 System.err.println("error: on action handler was found");
         }
-
     }
 }

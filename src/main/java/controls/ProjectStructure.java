@@ -5,22 +5,33 @@ import model.ProjectFile;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class ProjectStructure extends JTree {
 
-    private JLabel projectValueLabel, projectSizeValueLabel, projectDateValueLabel;
+    private final String zipPath = "." + File.separator + "resources" + File.separator + "projects" + File.separator;
+
+    private ProjectFile projectFile;
+    private JLabel projectNameValueLabel, projectSizeValueLabel, projectDateValueLabel;
 
     public ProjectStructure(DefaultMutableTreeNode rootNode) {
         super(rootNode);
+        this.projectFile = new ProjectFile();
     }
 
-    public JLabel getProjectValueLabel() {
-        return projectValueLabel;
+    public JLabel getProjectNameValueLabel() {
+        return projectNameValueLabel;
     }
 
-    public void setProjectValueLabel(JLabel projectValueLabel) {
-        this.projectValueLabel = projectValueLabel;
+    public void setProjectNameValueLabel(JLabel projectValueLabel) {
+        this.projectNameValueLabel = projectValueLabel;
     }
 
     public JLabel getProjectSizeValueLabel() {
@@ -61,10 +72,10 @@ public class ProjectStructure extends JTree {
      * Reload the product structure to refresh the UI and update the related labels.
      */
     public void reload() {
-        ProjectFile projectFile = (ProjectFile) getRootNode().getUserObject();
+        // set up project file --> ZIP it and gather information
+        setUpProjectFile();
 
-        getProjectValueLabel().setText(projectFile.getName());
-
+        // reload the tree model to refresh the project structure on the GUI
         getTreeModel().reload();
     }
 
@@ -75,6 +86,123 @@ public class ProjectStructure extends JTree {
      */
     public void setUpNewProjectStructure(File dictionary) {
         getRootNode().removeAllChildren();
-        ((ProjectFile) getRootNode().getUserObject()).setName(dictionary.getName());
+        getRootNode().setUserObject(new ProjectFile(dictionary.getName(), dictionary));
+    }
+
+    public ProjectFile getProjectFile() {
+        return projectFile;
+    }
+
+    public void setProjectFile(ProjectFile projectFile) {
+        this.projectFile = projectFile;
+    }
+
+    /**
+     * Set up the project file by generating the ZIP file and gather the basic attributes
+     */
+    private void setUpProjectFile() {
+        // create the ZIP file of the selected folder
+        List<File> fileList = new ArrayList<>();
+        File rootFile = ((ProjectFile) getRootNode().getUserObject()).getOriginalFile();
+
+        // create a ZIP file of the root node
+        getAllFiles(rootFile, fileList);
+        writeZipFile(rootFile, fileList);
+
+        // gather the basic file attributes and update the JLabels
+        BasicFileAttributes basicAttributes = null;
+        try {
+            basicAttributes = Files.readAttributes(
+                    Paths.get(rootFile.getPath()), BasicFileAttributes.class);
+
+            getProjectNameValueLabel().setText(rootFile.getName());
+            getProjectSizeValueLabel().setText(calculateProjectSizeToMB(basicAttributes.size()));
+            getProjectDateValueLabel().setText(basicAttributes.creationTime().toString());
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Calculates the size of the project in megabytes.
+     *
+     * @param size The size if the project in bytes
+     * @return The size of the project in megabytes
+     */
+    private String calculateProjectSizeToMB(long size) {
+        return Double.toString(size / 1000) + " MB";
+    }
+
+    /**
+     * Select all related files of the selected directory.
+     *
+     * @param directory The directory in which should be searched
+     * @param fileList  The file list which contains the selected files
+     */
+    public void getAllFiles(File directory, List<File> fileList) {
+        for (File file : directory.listFiles()) {
+            fileList.add(file);
+            if (file.isDirectory()) {
+                getAllFiles(file, fileList);
+            }
+        }
+    }
+
+    /**
+     * Write the selected files of the fileList into a new ZIP file.
+     *
+     * @param directoryToZip The name and directory of the new ZIP file
+     * @param fileList       The list of selected files which should be integrated into the ZIP file
+     */
+    public void writeZipFile(File directoryToZip, List<File> fileList) {
+
+        try {
+            FileOutputStream fos = new FileOutputStream(zipPath + directoryToZip.getName() + ".zip");
+            ZipOutputStream zos = new ZipOutputStream(fos);
+
+            for (File file : fileList) {
+                if (!file.isDirectory()) {
+                    addToZip(directoryToZip, file, zos);
+                }
+            }
+
+            zos.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Add the selected file to the new ZIP file.
+     *
+     * @param directoryToZip The path to the new ZIP file
+     * @param file           The file which should be added to the new ZIP file
+     * @param zos            The ZIP output stream which is used to generate the ZIP file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public void addToZip(File directoryToZip, File file, ZipOutputStream zos) throws FileNotFoundException,
+            IOException {
+        byte[] bytes = new byte[1024];
+        int length;
+
+        FileInputStream fis = new FileInputStream(file);
+
+        String zipFilePath = file.getCanonicalPath().substring(directoryToZip.getCanonicalPath().length() + 1,
+                file.getCanonicalPath().length());
+
+        ZipEntry zipEntry = new ZipEntry(zipFilePath);
+        zos.putNextEntry(zipEntry);
+
+        while ((length = fis.read(bytes)) >= 0) {
+            zos.write(bytes, 0, length);
+        }
+
+        zos.closeEntry();
+        fis.close();
     }
 }

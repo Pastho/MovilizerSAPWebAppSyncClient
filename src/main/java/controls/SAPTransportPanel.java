@@ -11,6 +11,12 @@ public class SAPTransportPanel extends JPanel {
     private JTextField sapSystemURLValue;
     private MovilizerWebAppSyncHandler movilizerWebAppSyncHandler;
 
+    /**
+     * Constructor to create a panel for SAP transport requests
+     *
+     * @param parent
+     * @param movilizerWebAppSyncHandler
+     */
     public SAPTransportPanel(ActionListener parent, MovilizerWebAppSyncHandler movilizerWebAppSyncHandler) {
         GroupLayout layout = new GroupLayout(this);
 
@@ -20,7 +26,7 @@ public class SAPTransportPanel extends JPanel {
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
 
-        JLabel sapSystemURLTitle = new JLabel("SAP System URL:");
+        JLabel sapSystemURLTitle = new JLabel("Transport Request:");
         sapSystemURLValue = new JTextField(movilizerWebAppSyncHandler.getSapConnection().getUrl());
 
         JButton saveButton = new JButton("Save");
@@ -58,5 +64,4 @@ public class SAPTransportPanel extends JPanel {
 
         this.setLayout(layout);
     }
-
 }
