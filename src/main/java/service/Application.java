@@ -18,7 +18,7 @@ public class Application {
         */
 
         // read the stored SAP Connection settings
-        SAPConnection sapConnection = new SAPConnection();
+        SAPConnection sapConnection = new SAPConnection("http://example.com");
 
         // start the GUI
         new GeneralView(new FileController(), new MovilizerWebAppSyncHandler(sapConnection));

@@ -2,7 +2,10 @@ package view;
 
 import controller.FileController;
 import controls.ProjectStructure;
+import controls.SAPConnectionPanel;
+import controls.SAPTransportPanel;
 import model.ProjectFile;
+import model.SAPConnection;
 import service.MovilizerWebAppSyncHandler;
 
 import javax.swing.*;
@@ -19,8 +22,8 @@ public class GeneralView extends JPanel implements ActionListener {
 
     // define page components
     private JFrame frame;
-    private JPanel mainPanel, sapConnectionPanel, treePanel, detailsPanel, detailsNotesPanel, detailsActionsPanel,
-            sapConnectionEntriesPanel, sapConnectionActionsPanel;
+    private JPanel mainPanel, sapConnectionPanel, sapTransportPanel, treePanel, detailsPanel, detailsNotesPanel, detailsActionsPanel;
+    private JTextField sapSystemURLValue;
     private JMenuBar menuBar;
     private JMenu filesMenu, settingsMenu;
     private ProjectStructure projectStructure;
@@ -48,12 +51,18 @@ public class GeneralView extends JPanel implements ActionListener {
         setUpMenu();
         setUpMainPanel();
         setUpSAPConnectionPanel();
+        setUpSAPTransportPanel();
 
         // at first show the main panel
         showMainPanel();
 
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void setUpSAPTransportPanel() {
+        sapTransportPanel = new SAPTransportPanel(this, movilizerWebAppSyncHandler);
+        sapTransportPanel.setPreferredSize(new Dimension(600, 400));
     }
 
     /**
@@ -83,82 +92,8 @@ public class GeneralView extends JPanel implements ActionListener {
      * Set up the SAP connection panel which contains two sub panels to maintain the connection to the SAP system.
      */
     private void setUpSAPConnectionPanel() {
-        GridLayout gridLayout = new GridLayout(2, 1);
-
-        sapConnectionPanel = new JPanel(gridLayout);
+        sapConnectionPanel = new SAPConnectionPanel(this, movilizerWebAppSyncHandler);
         sapConnectionPanel.setPreferredSize(new Dimension(600, 400));
-
-        setUpSAPConnectionEntriesPanel();
-        sapConnectionPanel.add(sapConnectionEntriesPanel);
-        setUpSAPConnectionActionsPanel();
-        sapConnectionPanel.add(sapConnectionActionsPanel);
-    }
-
-    /**
-     * Set up the SAP connection entries panel in which the SAP connection will be maintained.
-     */
-    private void setUpSAPConnectionEntriesPanel() {
-        sapConnectionEntriesPanel = new JPanel();
-        sapConnectionEntriesPanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 1));
-
-        // define group layout for details notes
-        GroupLayout layout = new GroupLayout(sapConnectionEntriesPanel);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-
-        JLabel sapSystemURLTitle = new JLabel("SAP System URL:");
-        JTextField sapSystemURLValue = new JTextField("http://example.com");
-
-        JLabel usernameTitle = new JLabel("Username:");
-        JTextField usernameValue = new JTextField("testuser");
-
-        JLabel passwordTitle = new JLabel("Password:");
-        JPasswordField passwordValue = new JPasswordField("testpassword");
-
-        layout.setHorizontalGroup(
-                layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                        .addComponent(sapSystemURLTitle)
-                                        .addComponent(usernameTitle)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                        .addComponent(sapSystemURLValue)
-                                        .addComponent(usernameValue)
-                        )
-                        .addComponent(passwordTitle)
-                        .addComponent(passwordValue)
-        );
-
-        layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(sapSystemURLTitle)
-                                        .addComponent(sapSystemURLValue)
-                        )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(usernameTitle)
-                                        .addComponent(usernameValue)
-                                        .addComponent(passwordTitle)
-                                        .addComponent(passwordValue)
-                        )
-        );
-
-        sapConnectionEntriesPanel.setLayout(layout);
-    }
-
-    private void setUpSAPConnectionActionsPanel() {
-        sapConnectionActionsPanel = new JPanel(new GridLayout(1, 2));
-
-        JButton saveButton = new JButton("Save");
-        saveButton.setActionCommand("button-save-sapConnection");
-        saveButton.addActionListener(this);
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.setActionCommand("button-cancel-sapConnection");
-        cancelButton.addActionListener(this);
-
-        sapConnectionActionsPanel.add(saveButton);
-        sapConnectionActionsPanel.add(cancelButton);
     }
 
     /**
@@ -173,7 +108,6 @@ public class GeneralView extends JPanel implements ActionListener {
         JScrollPane treeView = new JScrollPane(projectStructure);
         treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5));
         treePanel.add(treeView);
-        treePanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 1));
 
         mainPanel.add(treePanel, BorderLayout.WEST);
     }
@@ -197,7 +131,6 @@ public class GeneralView extends JPanel implements ActionListener {
      */
     private void setUpDetailsNotePanel() {
         detailsNotesPanel = new JPanel();
-        detailsNotesPanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 1));
 
         // define group layout for details notes
         GroupLayout layout = new GroupLayout(detailsNotesPanel);
@@ -332,6 +265,16 @@ public class GeneralView extends JPanel implements ActionListener {
         frame.validate();
     }
 
+    /**
+     * Sets the SAP connection panel as the active panel
+     */
+    private void showSAPTransportPanel() {
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(sapTransportPanel);
+        frame.repaint();
+        frame.validate();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         // handle the incoming events
@@ -348,6 +291,9 @@ public class GeneralView extends JPanel implements ActionListener {
                 System.out.println("clicked: menuItem-settings-SAPConnection");
                 break;
             case "button-save-sapConnection":
+                movilizerWebAppSyncHandler.getSapConnection()
+                        .updateSAPConnection(new SAPConnection(sapSystemURLValue.getText()));
+                showSAPConnectionPanel();
                 System.out.println("clicked: button-save-sapConnection");
                 break;
             case "button-cancel-sapConnection":
@@ -355,9 +301,11 @@ public class GeneralView extends JPanel implements ActionListener {
                 System.out.println("clicked: button-cancel-sapConnection");
                 break;
             case "menuItem-settings-Transportrequest":
+                showSAPTransportPanel();
                 System.out.println("clicked: menuItem-settings-Transportrequest");
                 break;
             case "button-send-webapp":
+                new LoginView();
                 System.out.print("clicked: button-send-webapp");
                 movilizerWebAppSyncHandler.putWebApp("THIS_IS_AN_EXAMPLE");
                 break;

@@ -15,8 +15,20 @@ public class MovilizerWebAppSyncHandler {
         this.sapConnection = sapConnection;
     }
 
+    public SAPConnection getSapConnection() {
+        return this.sapConnection;
+    }
+
+    public void setSapConnection(SAPConnection sapConnection) {
+        this.sapConnection = sapConnection;
+    }
+
     public void putWebApp(String webAppId) {
         String url = "http://router2.movilizer.com:8105/movilizer/webappsync/webapps/{webappid}/versions";
+
+        authenticateUser();
+
+        /*
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + userCredentials);
@@ -26,10 +38,14 @@ public class MovilizerWebAppSyncHandler {
         ResponseEntity<Object> response = new RestTemplate().exchange(url, HttpMethod.GET, request, Object.class, webAppId);
 
         System.out.println(response);
+        */
     }
 
     private void authenticateUser() {
-        userCredentials = new String(Base64.encodeBase64((sapConnection.getUsername() + ":" + sapConnection.getPassword()).getBytes()));
+        String username = "";
+        String password = "";
+
+        userCredentials = new String(Base64.encodeBase64((username + ":" + password).getBytes()));
     }
 
     private String getCSRFToken() {
