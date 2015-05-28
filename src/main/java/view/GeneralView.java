@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class GeneralView extends JPanel implements ActionListener {
+public class GeneralView extends UserSessionWindow implements ActionListener {
 
     // define controllers
     private FileController fileController;
@@ -19,7 +19,7 @@ public class GeneralView extends JPanel implements ActionListener {
 
     // define page components
     private JFrame frame;
-    private JPanel mainPanel, sapTransportPanel, treePanel, detailsPanel;
+    private JPanel mainPanel, sapTransportPanel;
     private SAPConnectionPanel sapConnectionPanel;
     private ProjectStructure projectStructure;
 
@@ -90,12 +90,12 @@ public class GeneralView extends JPanel implements ActionListener {
      */
     private void setUpTreePanel() {
         // create the tree panel
-        treePanel = new JPanel(new GridLayout(1, 1));
+        JPanel treePanel = new JPanel(new GridLayout(1, 1));
 
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ProjectFile("Please select a project"));
         projectStructure = new ProjectStructure(rootNode);
         JScrollPane treeView = new JScrollPane(projectStructure);
-        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5)); // create an intend
+        treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5));
         treePanel.add(treeView);
 
         mainPanel.add(treePanel, BorderLayout.WEST);
@@ -145,14 +145,19 @@ public class GeneralView extends JPanel implements ActionListener {
                 showSAPConnectionPanel();
                 System.out.println("clicked: menuItem-settings-SAPConnection");
                 break;
+            case "button-create-sapConnection":
+                movilizerWebAppSyncHandler.getSapConnection()
+                        .updateSAPConnection(sapConnectionPanel.getSAPConnection());
+                System.out.println("clicked: button-create-sapConnection");
+                break;
             case "button-save-sapConnection":
                 movilizerWebAppSyncHandler.getSapConnection()
                         .updateSAPConnection(sapConnectionPanel.getSAPConnection());
                 System.out.println("clicked: button-save-sapConnection");
                 break;
-            case "button-cancel-sapConnection":
+            case "button-delete-sapConnection":
                 showSAPConnectionPanel();
-                System.out.println("clicked: button-cancel-sapConnection");
+                System.out.println("clicked: button-delete-sapConnection");
                 break;
             case "menuItem-settings-Transportrequest":
                 showSAPTransportPanel();

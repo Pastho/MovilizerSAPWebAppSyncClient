@@ -5,7 +5,7 @@ import service.MovilizerWebAppSyncHandler;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-public class SAPTransportPanel extends JPanel {
+public class SAPTransportPanel extends UserSessionWindow {
 
     private ActionListener parent;
     private JTextField sapSystemURLValue;

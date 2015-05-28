@@ -6,7 +6,7 @@ import service.MovilizerWebAppSyncHandler;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-public class SAPConnectionPanel extends JPanel {
+public class SAPConnectionPanel extends UserSessionWindow {
 
     private ActionListener parent;
     private JTextField sapSystemURLValue, sapSystemUsername, sapSystemPassword;
@@ -45,15 +45,18 @@ public class SAPConnectionPanel extends JPanel {
         JLabel sapSystemPasswordTitle = new JLabel("Password:");
         sapSystemPassword = new JPasswordField(movilizerWebAppSyncHandler.getSapConnection().getPassword());
 
+        // create connection button
+        JButton createButton = new JButton("Create");
+        createButton.setActionCommand("button-create-sapConnection");
+
+        // delete connection button
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.setActionCommand("button-delete-sapConnection");
+
         // save button
         JButton saveButton = new JButton("Save");
         saveButton.setActionCommand("button-save-sapConnection");
         saveButton.addActionListener(parent);
-
-        // cancel button
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.setActionCommand("button-cancel-sapConnection");
-        cancelButton.addActionListener(parent);
 
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
@@ -68,8 +71,10 @@ public class SAPConnectionPanel extends JPanel {
                                         .addComponent(sapSystemUsername)
                                         .addComponent(sapSystemPassword)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(saveButton)
-                                                .addComponent(cancelButton))
+                                                        .addComponent(createButton)
+                                                        .addComponent(saveButton)
+                                                        .addComponent(deleteButton)
+                                        )
                         )
         );
 
@@ -88,8 +93,9 @@ public class SAPConnectionPanel extends JPanel {
                                         .addComponent(sapSystemPassword)
                         )
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(createButton)
                                         .addComponent(saveButton)
-                                        .addComponent(cancelButton)
+                                        .addComponent(deleteButton)
                         )
         );
 

@@ -3,5 +3,4 @@ gradle*
 MovilizerSAPWebAppSyncClient.iml
 .idea
 build
-resources/application.config
-resources/projects
+resources/*

@@ -31,4 +31,14 @@ public class Page {
         return website;
     }
     */
+
+
+    /* for calling
+        RestTemplate restTemplate = new RestTemplate();
+        Page page = restTemplate.getForObject("http://router2.movilizer.com:8105/movilizer/webappsync/webapps/moep/versions", Page.class);
+        System.out.println("Name:    " + page.getName());
+        System.out.println("About:   " + page.getAbout());
+        System.out.println("Phone:   " + page.getPhone());
+        System.out.println("Website: " + page.getWebsite());
+        */
 }

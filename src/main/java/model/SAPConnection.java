@@ -1,23 +1,10 @@
 package model;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-
 public class SAPConnection {
-
-    private final String applicationConfigPath = "resources/application.config";
 
     private String url;
     private String username;
     private String password;
-
-    /**
-     * Default constructor
-     */
-    public SAPConnection() {
-    }
 
     /**
      * Constructor for fully described SAP connections
@@ -37,20 +24,7 @@ public class SAPConnection {
      * Stores the SAP connection in the application.config file
      */
     private void storeConnection() {
-        try {
-            File file = new File(applicationConfigPath);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            Writer writer = new FileWriter(file);
-            writer.write("url=" + getUrl() + "\n");
-            writer.write("username=" + getUsername() + "\n");
-            writer.write("password=" + getPassword());
-            writer.close();
-        } catch (IOException ex) {
-            System.err.println("error: SAP connection couldn't be stored");
-        }
+        // TODO store the SAP connection in the application config
     }
 
     public String getUrl() {
