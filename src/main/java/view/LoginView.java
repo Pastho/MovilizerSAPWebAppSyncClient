@@ -127,9 +127,10 @@ public class LoginView extends UserSessionWindow implements ActionListener {
         if (getUserConfigService().doesUserExists(getUsernameTextField().getText())) {
             setSessionUsername(getUsernameTextField().getText());
             return true;
+        } else {
+            JOptionPane.showMessageDialog(frame, "Login not possible. Please enter a valid user.", "Login failed", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
-
-        return false;
 
         /*
         String usernameAndPassword = getUsernameTextField().getText() + ":" + getPasswordTextField().getText();
@@ -176,13 +177,20 @@ public class LoginView extends UserSessionWindow implements ActionListener {
      */
     private boolean checkInputFields() {
         boolean result = true;
+        String errorMessage = "";
 
         if (getUsernameTextField().getText().isEmpty()) {
             result = false;
+            errorMessage += "Please enter an username \n";
         }
 
         if (getPasswordTextField().getText().isEmpty()) {
             result = false;
+            errorMessage += "Please enter a password \n";
+        }
+
+        if (!result) {
+            JOptionPane.showMessageDialog(frame, errorMessage, "Bad user credentials", JOptionPane.WARNING_MESSAGE);
         }
 
         return result;

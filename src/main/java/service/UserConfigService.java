@@ -19,6 +19,7 @@ public class UserConfigService {
     private final String CONNECTIONFILE = "/connections.xml";
     private final String TRANSPORTREQUESTFILE = "/transportrequests.xml";
     private final String USERFOLDERPATH = "./resources/";
+    private final String CONNECTIONS = "connections";
 
     private DocumentBuilderFactory documentBuilderFactory;
     private DocumentBuilder documentBuilder;
@@ -66,7 +67,7 @@ public class UserConfigService {
                 Document document = getDocumentBuilder().newDocument();
 
                 // create the root element
-                Element rootElement = document.createElement("connections");
+                Element rootElement = document.createElement(CONNECTIONS);
                 document.appendChild(rootElement);
 
                 // write content into XML file

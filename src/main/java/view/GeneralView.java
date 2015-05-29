@@ -71,7 +71,6 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
         sapConnectionPanel.setPreferredSize(new Dimension(600, 400));
     }
 
-
     /**
      * Set up the main panel by adding all the sub panels.
      */
@@ -146,13 +145,11 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 System.out.println("clicked: menuItem-settings-SAPConnection");
                 break;
             case "button-create-sapConnection":
-                movilizerWebAppSyncHandler.getSapConnection()
-                        .updateSAPConnection(sapConnectionPanel.getSAPConnection());
+                sapConnectionPanel.createSAPConnection();
                 System.out.println("clicked: button-create-sapConnection");
                 break;
             case "button-save-sapConnection":
-                movilizerWebAppSyncHandler.getSapConnection()
-                        .updateSAPConnection(sapConnectionPanel.getSAPConnection());
+                sapConnectionPanel.updateSAPConnection();
                 System.out.println("clicked: button-save-sapConnection");
                 break;
             case "button-delete-sapConnection":
