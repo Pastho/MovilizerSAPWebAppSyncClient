@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SAPConnectionPanel extends UserSessionWindow {
 
@@ -51,7 +53,7 @@ public class SAPConnectionPanel extends UserSessionWindow {
                 }
             }
         });
-        getSapConnectionConfigController().updateComboBox(availableSAPConnectionsList);
+        getSapConnectionConfigController().updateComboBox(getAvailableSAPConnectionsList());
 
         // SAP system connection
         JLabel sapSystemURLTitle = new JLabel("SAP System URL:");
@@ -139,6 +141,16 @@ public class SAPConnectionPanel extends UserSessionWindow {
         return new SAPConnection(getURLValue(), getUsernameValue(), getPasswordValue());
     }
 
+    /**
+     * Returns a SAP connection retrieved by the connection URL.
+     *
+     * @param connectionURL The connection URL which is used to retrieve the SAP connection
+     * @return The SAP connection
+     */
+    public SAPConnection getSAPConnection(String connectionURL) {
+        return getSapConnectionConfigController().getSAPConnection(connectionURL);
+    }
+
     public JTextField getSapSystemPassword() {
         return sapSystemPassword;
     }
@@ -155,8 +167,20 @@ public class SAPConnectionPanel extends UserSessionWindow {
         return availableSAPConnectionsList;
     }
 
-    public void setAvailableSAPConnectionsList(JComboBox<String> availableSAPConnectionsList) {
-        this.availableSAPConnectionsList = availableSAPConnectionsList;
+    /**
+     * Returns a list of available SAP connections.
+     *
+     * @return The list of available SAP connections
+     */
+    public Object[] getAvailableSAPConnections() {
+        List<String> result = new ArrayList<>();
+        getSapConnectionConfigController().updateComboBox(getAvailableSAPConnectionsList());
+
+        for (int i = 0; i < getAvailableSAPConnectionsList().getItemCount(); i++) {
+            result.add(getAvailableSAPConnectionsList().getItemAt(i));
+        }
+
+        return result.toArray();
     }
 
     public SAPConnectionConfigController getSapConnectionConfigController() {

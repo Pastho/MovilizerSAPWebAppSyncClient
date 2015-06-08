@@ -10,7 +10,10 @@ import java.io.File;
 
 public class FileController {
 
-    public void openFolder(JPanel panel, ProjectStructure projectStructure) {
+    private final String ZIPPATH = "." + File.separator + "resources" + File.separator + "projects" + File.separator;
+    private final String ZIPENDING = ".zip";
+
+    public String openFolder(JPanel panel, ProjectStructure projectStructure) {
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -22,6 +25,8 @@ public class FileController {
             projectStructure.setProjectFile(new ProjectFile(fileChooser.getSelectedFile().getName(), fileChooser.getSelectedFile()));
             changeProjectStructureFromProject(projectStructure);
         }
+
+        return fileChooser.getSelectedFile().getName();
     }
 
     /**
@@ -65,6 +70,10 @@ public class FileController {
                 }
             }
         }
+    }
+
+    public File readProjectFile(String projectName) {
+        return new File(ZIPPATH + projectName + ZIPENDING);
     }
 
 }
