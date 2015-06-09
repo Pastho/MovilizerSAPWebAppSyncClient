@@ -125,6 +125,11 @@ public class LoginView extends UserSessionWindow implements ActionListener {
     private boolean login() {
 
         if (getUserConfigService().doesUserExists(getUsernameTextField().getText())) {
+
+            // do the login process
+            // TODO
+
+
             setSessionUsername(getUsernameTextField().getText());
             return true;
         } else {

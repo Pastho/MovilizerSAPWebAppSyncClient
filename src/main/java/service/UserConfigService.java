@@ -11,8 +11,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 
 public class UserConfigService {
 
@@ -75,6 +75,15 @@ public class UserConfigService {
                 Transformer transformer = transformerFactory.newTransformer();
                 DOMSource source = new DOMSource(document);
                 StreamResult result = new StreamResult(xmlFile);
+
+                /*
+                result.setOutputStream(new OutputStream() {
+                    @Override
+                    public void write(int b) throws IOException {
+                        // TODO decrypt the data
+                    }
+                });
+                */
 
                 transformer.transform(source, result);
 

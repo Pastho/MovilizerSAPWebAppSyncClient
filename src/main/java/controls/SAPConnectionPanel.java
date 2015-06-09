@@ -238,4 +238,16 @@ public class SAPConnectionPanel extends UserSessionWindow {
             JOptionPane.showMessageDialog(getParent(), "SAP Connection was not updated because the Entry was not found", "SAP Connection not updated", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    /**
+     * Deletes the selected SAP connection from the connection config file by using the values from the input fields
+     */
+    public void deleteSAPConnection() {
+        if (getSapConnectionConfigController().deleteSAPConnection(getSAPConnection())) {
+            JOptionPane.showMessageDialog(getParent(), "SAP Connection was deleted", "SAP Connection deleted", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(getParent(), "SAP Connection was not deleted", "SAP Connection not deleted", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
 }

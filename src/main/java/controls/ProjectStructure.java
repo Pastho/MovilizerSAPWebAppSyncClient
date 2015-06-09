@@ -16,13 +16,16 @@ import java.util.zip.ZipOutputStream;
 
 public class ProjectStructure extends JTree {
 
-    private final String zipPath = "." + File.separator + "resources" + File.separator + "projects" + File.separator;
+    private final String ZIPPATH = "." + File.separator + "resources" + File.separator;
+    private final String PROJECTFOLDER = File.separator + "projects" + File.separator;
 
     private ProjectFile projectFile;
     private JLabel projectNameValueLabel, projectSizeValueLabel, projectDateValueLabel;
+    private String username;
 
-    public ProjectStructure(DefaultMutableTreeNode rootNode) {
+    public ProjectStructure(DefaultMutableTreeNode rootNode, String username) {
         super(rootNode);
+        this.username = username;
         this.projectFile = new ProjectFile();
     }
 
@@ -48,6 +51,10 @@ public class ProjectStructure extends JTree {
 
     public void setProjectDateValueLabel(JLabel projectDateValueLabel) {
         this.projectDateValueLabel = projectDateValueLabel;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     /**
@@ -158,7 +165,20 @@ public class ProjectStructure extends JTree {
     public void writeZipFile(File directoryToZip, List<File> fileList) {
 
         try {
-            FileOutputStream fos = new FileOutputStream(zipPath + directoryToZip.getName() + ".zip");
+            File projectFolder = new File(ZIPPATH + getUsername() + PROJECTFOLDER);
+            File zipFile = new File(ZIPPATH + getUsername() + PROJECTFOLDER + directoryToZip.getName() + ".zip");
+
+            // check if folder is existing
+            if(!projectFolder.exists()) {
+                projectFolder.mkdir();
+            }
+
+            // create a new zip file if its not existing
+            if (!zipFile.exists()) {
+                zipFile.createNewFile();
+            }
+
+            FileOutputStream fos = new FileOutputStream(zipFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
 
             for (File file : fileList) {

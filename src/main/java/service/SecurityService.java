@@ -106,7 +106,6 @@ public class SecurityService {
             throw new IllegalArgumentException(
                     "key argument does not contain a valid AES key");
         } catch (BadPaddingException e) {
-            // you'd better know about padding oracle attacks
             return null;
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException(

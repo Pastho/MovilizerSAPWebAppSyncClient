@@ -92,7 +92,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
         JPanel treePanel = new JPanel(new GridLayout(1, 1));
 
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ProjectFile("Please select a project"));
-        projectStructure = new ProjectStructure(rootNode);
+        projectStructure = new ProjectStructure(rootNode, getSessionUsername());
         JScrollPane treeView = new JScrollPane(projectStructure);
         treeView.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 5));
         treePanel.add(treeView);
@@ -153,7 +153,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 System.out.println("clicked: button-save-sapConnection");
                 break;
             case "button-delete-sapConnection":
-                showSAPConnectionPanel();
+                sapConnectionPanel.deleteSAPConnection();
                 System.out.println("clicked: button-delete-sapConnection");
                 break;
             case "menuItem-settings-Transportrequest":
