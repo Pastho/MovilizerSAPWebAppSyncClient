@@ -130,12 +130,53 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
         frame.validate();
     }
 
+    public MovilizerWebAppSyncHandler getMovilizerWebAppSyncHandler() {
+        return movilizerWebAppSyncHandler;
+    }
+
+    public SAPConnectionPanel getSapConnectionPanel() {
+        return sapConnectionPanel;
+    }
+
+    public FileController getFileController() {
+        return fileController;
+    }
+
+    private void sendWebApp() {
+        if (getSessionProject() != null) {
+
+            // get available SAP connections and show the dialog
+            Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
+
+            if (sapConnections.length > 0) {
+                String answer = (String) JOptionPane.showInputDialog(
+                        frame,
+                        "Please select an available SAP connection from the list:",
+                        "Select SAP Connection",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        sapConnections,
+                        sapConnections[0]);
+
+                // if a SAP connection was selected try to put the WebApp to the SAP system
+                if (!answer.isEmpty()) {
+                    getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
+                    getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionProject()));
+                }
+            } else {
+                JOptionPane.showMessageDialog(frame, "Please enter a SAP connection in the SAP connection menu.", "No available SAP connections", JOptionPane.WARNING_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Please select a project before sending it.", "No project selected", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         switch (event.getActionCommand()) {
             case "menuItem-file-openFolder":
                 System.out.println("clicked: menuItem-file-openFolder");
-                this.fileController.openFolder(this, projectStructure);
+                setSessionProject(getFileController().openFolder(this, projectStructure));
                 break;
             case "menuItem-file-showProject":
                 showMainPanel();
@@ -145,11 +186,11 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 System.out.println("clicked: menuItem-settings-SAPConnection");
                 break;
             case "button-create-sapConnection":
-                sapConnectionPanel.createSAPConnection();
+                getSapConnectionPanel().createSAPConnection();
                 System.out.println("clicked: button-create-sapConnection");
                 break;
             case "button-save-sapConnection":
-                sapConnectionPanel.updateSAPConnection();
+                getSapConnectionPanel().updateSAPConnection();
                 System.out.println("clicked: button-save-sapConnection");
                 break;
             case "button-delete-sapConnection":
@@ -162,7 +203,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 break;
             case "button-send-webapp":
                 System.out.print("clicked: button-send-webapp");
-                movilizerWebAppSyncHandler.putWebApp("THIS_IS_AN_EXAMPLE");
+                sendWebApp();
                 break;
             default:
                 System.err.println("error: on action handler was found");
