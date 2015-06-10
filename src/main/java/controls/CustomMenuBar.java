@@ -30,7 +30,7 @@ public class CustomMenuBar extends JMenuBar {
         filesMenu = new JMenu("File");
 
         // build the file menu items
-        menuItem = new JMenuItem("Open Folder");
+        menuItem = new JMenuItem("Open Folder as new Project");
         menuItem.setActionCommand("menuItem-file-openFolder");
         menuItem.addActionListener(getParentActionListener());
         filesMenu.add(menuItem);
@@ -40,7 +40,7 @@ public class CustomMenuBar extends JMenuBar {
         menuItem.addActionListener(getParentActionListener());
         filesMenu.add(menuItem);
 
-        menuItem = new JMenuItem("Show Project");
+        menuItem = new JMenuItem("Show Project Screen");
         menuItem.setActionCommand("menuItem-file-showProject");
         menuItem.addActionListener(getParentActionListener());
         filesMenu.add(menuItem);
@@ -59,12 +59,12 @@ public class CustomMenuBar extends JMenuBar {
         settingsMenu = new JMenu("Settings");
 
         // build the settings menu
-        menuItem = new JMenuItem("SAP Connection");
+        menuItem = new JMenuItem("Maintain SAP Connections");
         menuItem.setActionCommand("menuItem-settings-SAPConnection");
         menuItem.addActionListener(getParentActionListener());
         settingsMenu.add(menuItem);
 
-        menuItem = new JMenuItem("Transport Request");
+        menuItem = new JMenuItem("Maintain Transport Requests");
         menuItem.setActionCommand("menuItem-settings-Transportrequest");
         menuItem.addActionListener(getParentActionListener());
         settingsMenu.add(menuItem);

@@ -8,14 +8,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class MovilizerWebAppSyncHandler {
 
@@ -74,7 +69,9 @@ public class MovilizerWebAppSyncHandler {
 
         MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
         try {
-            content.add("file", new ByteArrayResource(Files.readAllBytes(webApp.toPath())));
+            byte[] byteArray = Files.readAllBytes(webApp.toPath());
+
+            content.add("file", new ByteArrayResource(byteArray));
             httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             HttpEntity request = new HttpEntity<>(content, httpHeaders);
@@ -88,7 +85,34 @@ public class MovilizerWebAppSyncHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * Generates a ZIP-file from an existing byte array.
+     *
+     * @param byteArray The byte array which contains the data for the file
+     */
+    private void generateZIPFileFromByteArray(byte[] byteArray) {
+
+        //File file = new File();
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream("./resources/test.zip");
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            for (int i = 0; i < byteArray.length; i++) {
+                byteArrayOutputStream.write(byteArray[i]);
+            }
+
+            byteArrayOutputStream.writeTo(fileOutputStream);
+
+            fileOutputStream.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -113,24 +137,7 @@ public class MovilizerWebAppSyncHandler {
         ResponseEntity<String> response = new RestTemplate().
                 exchange(url, HttpMethod.GET, request, String.class, project);
 
-        // check the response
-        try {
-            new File("./resources/projects/test.zip").createNewFile();
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ZipOutputStream zos = new ZipOutputStream(baos);
-            ZipEntry entry = new ZipEntry("./resources/projects/test.zip");
-            entry.setSize(response.getBody().getBytes().length);
-            zos.putNextEntry(entry);
-            zos.write(response.getBody().getBytes());
-            zos.closeEntry();
-            zos.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        generateZIPFileFromByteArray(response.getBody().getBytes());
     }
 
     /**
