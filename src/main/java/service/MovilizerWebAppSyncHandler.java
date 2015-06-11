@@ -3,6 +3,7 @@ package service;
 import model.SAPConnection;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -15,6 +16,7 @@ import java.util.List;
 public class MovilizerWebAppSyncHandler {
 
     private final String MOVILIZERWEBAPPWEBSERVICE = "/movilizer/webappsync/webapps/{webappid}";
+    private final String MOVILIZERWEBAPPSLISTWEBSERVICE = "/movilizer/webappsync/webapps";
 
     private List<String> sessionCookies;
     private String csrfToken;
@@ -62,19 +64,15 @@ public class MovilizerWebAppSyncHandler {
         authenticateUser();
 
         // update session and parameters
-        updateCSRFToken(url, webApp.getName());
+        updateCSRFToken();
 
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders();
 
-        MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
         try {
             byte[] byteArray = Files.readAllBytes(webApp.toPath());
-
-            content.add("file", new ByteArrayResource(byteArray));
-            httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            HttpEntity request = new HttpEntity<>(content, httpHeaders);
+            
+            HttpEntity request = new HttpEntity<>(byteArray, httpHeaders);
 
             // send WebApp to SAP System
             ResponseEntity<Object> response = new RestTemplate().
@@ -93,9 +91,6 @@ public class MovilizerWebAppSyncHandler {
      * @param byteArray The byte array which contains the data for the file
      */
     private void generateZIPFileFromByteArray(byte[] byteArray) {
-
-        //File file = new File();
-
         try {
             FileOutputStream fileOutputStream = new FileOutputStream("./resources/test.zip");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -127,7 +122,7 @@ public class MovilizerWebAppSyncHandler {
         authenticateUser();
 
         // update session and parameters
-        updateCSRFToken(url, project);
+        updateCSRFToken();
 
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders();
@@ -138,6 +133,32 @@ public class MovilizerWebAppSyncHandler {
                 exchange(url, HttpMethod.GET, request, String.class, project);
 
         generateZIPFileFromByteArray(response.getBody().getBytes());
+    }
+
+    /**
+     * Gets a list of available WebApps in the selected SAP system.
+     * @return The list of available WebApps
+     */
+    public String[] getWebAppsList() {
+        String url = sapConnection.getUrl() + MOVILIZERWEBAPPSLISTWEBSERVICE;
+
+        // authenticate the user to prepare the webservice call
+        authenticateUser();
+
+        // update session and parameters
+        updateCSRFToken();
+
+        // build HTTP request with header and content
+        HttpHeaders httpHeaders = generateHeaders();
+        HttpEntity request = new HttpEntity<>(httpHeaders);
+
+        // send WebApp to SAP System
+        ResponseEntity<String> response = new RestTemplate().
+                exchange(url, HttpMethod.GET, request, String.class);
+
+        System.out.println(request.getBody());
+
+        return null;
     }
 
     /**
@@ -173,13 +194,13 @@ public class MovilizerWebAppSyncHandler {
     /**
      * Updates the CSRF token by using the HEAD operation on the selected SAP connection.
      */
-    private void updateCSRFToken(String url, String parameter) {
+    private void updateCSRFToken() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + userCredentials);
         headers.add("x-csrf-token", "fetch");
         HttpEntity<String> request = new HttpEntity<>(headers);
         ResponseEntity<Object> response = new RestTemplate().
-                exchange(getSapConnection().getURLforCSRF(), HttpMethod.HEAD, request, Object.class, parameter);
+                exchange(getSapConnection().getURLforCSRF(), HttpMethod.HEAD, request, Object.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             setSessionCookies(response.getHeaders().get("set-cookie"));

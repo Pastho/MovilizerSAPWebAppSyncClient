@@ -161,7 +161,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 // if a SAP connection was selected try to put the WebApp to the SAP system
                 if (!answer.isEmpty()) {
                     getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
-                    getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionProject()));
+                    getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionUsername(), getSessionProject()));
                 }
             } else {
                 JOptionPane.showMessageDialog(frame, "Please enter a SAP connection in the SAP connection menu.", "No available SAP connections", JOptionPane.WARNING_MESSAGE);
@@ -187,8 +187,15 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
 
             // if a SAP connection was selected try to put the WebApp to the SAP system
             if (!answer.isEmpty()) {
+
+                // set the selected SAP connection as the current SAP connection
                 getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
-                getMovilizerWebAppSyncHandler().getWebApp("HTML5_2015_04_29");
+
+                // get the list of available WebApps
+                getMovilizerWebAppSyncHandler().getWebAppsList();
+
+                // get the selected WebApp from the SAP system
+                getMovilizerWebAppSyncHandler().getWebApp("HTML5_2015_06_09");
             }
         }
     }

@@ -10,7 +10,8 @@ import java.io.File;
 
 public class FileController {
 
-    private final String ZIPPATH = "." + File.separator + "resources" + File.separator + "projects" + File.separator;
+    private final String ZIPPATH = "." + File.separator + "resources" + File.separator;
+    private final String PROJECTFOLDER = File.separator + "projects" + File.separator;
     private final String ZIPENDING = ".zip";
 
     public String openFolder(JPanel panel, ProjectStructure projectStructure) {
@@ -72,8 +73,8 @@ public class FileController {
         }
     }
 
-    public File readProjectFile(String projectName) {
-        return new File(ZIPPATH + projectName + ZIPENDING);
+    public File readProjectFile(String username, String projectName) {
+        return new File(ZIPPATH + username + PROJECTFOLDER + projectName + ZIPENDING );
     }
 
 }
