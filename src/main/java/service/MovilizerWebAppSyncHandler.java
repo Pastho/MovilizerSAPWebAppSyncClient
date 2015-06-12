@@ -1,16 +1,18 @@
 package service;
 
 import model.SAPConnection;
+import model.WebAppVersion;
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovilizerWebAppSyncHandler {
@@ -67,44 +69,20 @@ public class MovilizerWebAppSyncHandler {
         updateCSRFToken();
 
         // build HTTP request with header and content
-        HttpHeaders httpHeaders = generateHeaders();
+        HttpHeaders httpHeaders = generateHeaders("application/octet-stream");
 
         try {
             byte[] byteArray = Files.readAllBytes(webApp.toPath());
-            
+
             HttpEntity request = new HttpEntity<>(byteArray, httpHeaders);
 
             // send WebApp to SAP System
-            ResponseEntity<Object> response = new RestTemplate().
-                    exchange(url, HttpMethod.PUT, request, Object.class, filename);
+            ResponseEntity<String> response = new RestTemplate().
+                    exchange(url, HttpMethod.PUT, request, String.class, filename);
 
             // check the response
             System.out.println(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * Generates a ZIP-file from an existing byte array.
-     *
-     * @param byteArray The byte array which contains the data for the file
-     */
-    private void generateZIPFileFromByteArray(byte[] byteArray) {
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream("./resources/test.zip");
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-            for (int i = 0; i < byteArray.length; i++) {
-                byteArrayOutputStream.write(byteArray[i]);
-            }
-
-            byteArrayOutputStream.writeTo(fileOutputStream);
-
-            fileOutputStream.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -115,7 +93,7 @@ public class MovilizerWebAppSyncHandler {
      *
      * @param project The requested WebApp
      */
-    public void getWebApp(String project) {
+    public byte[] getWebApp(String project) {
         String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE;
 
         // authenticate the user to prepare the webservice call
@@ -125,21 +103,23 @@ public class MovilizerWebAppSyncHandler {
         updateCSRFToken();
 
         // build HTTP request with header and content
-        HttpHeaders httpHeaders = generateHeaders();
+        HttpHeaders httpHeaders = generateHeaders("text/plain");
         HttpEntity request = new HttpEntity<>(httpHeaders);
 
         // send WebApp to SAP System
-        ResponseEntity<String> response = new RestTemplate().
-                exchange(url, HttpMethod.GET, request, String.class, project);
+        ResponseEntity<byte[]> response = new RestTemplate().
+                exchange(url, HttpMethod.GET, request, byte[].class, project);
 
-        generateZIPFileFromByteArray(response.getBody().getBytes());
+        return response.getBody();
     }
 
     /**
      * Gets a list of available WebApps in the selected SAP system.
+     *
      * @return The list of available WebApps
      */
-    public String[] getWebAppsList() {
+    public List<WebAppVersion> getWebAppsList() {
+        List<WebAppVersion> webAppVersions = new ArrayList<>();
         String url = sapConnection.getUrl() + MOVILIZERWEBAPPSLISTWEBSERVICE;
 
         // authenticate the user to prepare the webservice call
@@ -149,7 +129,7 @@ public class MovilizerWebAppSyncHandler {
         updateCSRFToken();
 
         // build HTTP request with header and content
-        HttpHeaders httpHeaders = generateHeaders();
+        HttpHeaders httpHeaders = generateHeaders("text/plain");
         HttpEntity request = new HttpEntity<>(httpHeaders);
 
         // send WebApp to SAP System
@@ -158,7 +138,31 @@ public class MovilizerWebAppSyncHandler {
 
         System.out.println(request.getBody());
 
-        return null;
+        // parse the JSON result
+        String body = response.getBody();
+
+        try {
+            JSONArray jsonArray = new JSONArray(body);
+            JSONObject jsonObject;
+            for (int i = 0; i < jsonArray.length(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+
+                // create a new WebApp version
+                webAppVersions.add(new WebAppVersion(
+                        jsonObject.getString("mandt"),
+                        jsonObject.getString("id"),
+                        jsonObject.getString("version"),
+                        jsonObject.getString("name"),
+                        jsonObject.getString("description"),
+                        jsonObject.getString("hashcode"),
+                        jsonObject.getString("timestamp")
+                ));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return webAppVersions;
     }
 
     /**
@@ -166,10 +170,11 @@ public class MovilizerWebAppSyncHandler {
      *
      * @return The HTTP header object
      */
-    private HttpHeaders generateHeaders() {
+    private HttpHeaders generateHeaders(String contentType) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + userCredentials);
         headers.add("x-csrf-token", getCSRFToken());
+        headers.add("Content-Type", contentType);
 
         // build the session cookies
         if (getSessionCookies() != null) {

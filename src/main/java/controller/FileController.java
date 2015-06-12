@@ -7,6 +7,9 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class FileController {
 
@@ -74,7 +77,29 @@ public class FileController {
     }
 
     public File readProjectFile(String username, String projectName) {
-        return new File(ZIPPATH + username + PROJECTFOLDER + projectName + ZIPENDING );
+        return new File(ZIPPATH + username + PROJECTFOLDER + projectName + ZIPENDING);
+    }
+
+    /**
+     * Generates a ZIP-file from an existing byte array.
+     *
+     * @param byteArray The byte array which contains the data for the file
+     */
+    public void generateZIPFileFromByteArray(byte[] byteArray, String username, String project) {
+        try {
+
+            File file = new File(ZIPPATH + username + PROJECTFOLDER + project + ZIPENDING);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            Files.write(file.toPath(), byteArray);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

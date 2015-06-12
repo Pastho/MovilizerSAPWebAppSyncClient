@@ -3,6 +3,7 @@ package view;
 import controller.FileController;
 import controls.*;
 import model.ProjectFile;
+import model.WebAppVersion;
 import service.MovilizerWebAppSyncHandler;
 
 import javax.swing.*;
@@ -142,6 +143,9 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
         return fileController;
     }
 
+    /**
+     * Send a WebApp to the selected SAP connection.
+     */
     private void sendWebApp() {
         if (getSessionProject() != null) {
 
@@ -171,12 +175,15 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
         }
     }
 
+    /**
+     * Opens a pop up where a WebApp project can be selected over an existing SAP connection.
+     */
     private void getWebApp() {
         // get available SAP connections and show the dialog
         Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
 
         if (sapConnections.length > 0) {
-            String answer = (String) JOptionPane.showInputDialog(
+            String answerSAPConnection = (String) JOptionPane.showInputDialog(
                     frame,
                     "Please select an available SAP connection from the list:",
                     "Select SAP Connection",
@@ -186,17 +193,35 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                     sapConnections[0]);
 
             // if a SAP connection was selected try to put the WebApp to the SAP system
-            if (!answer.isEmpty()) {
+            if (!answerSAPConnection.isEmpty()) {
 
                 // set the selected SAP connection as the current SAP connection
-                getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
+                getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
 
                 // get the list of available WebApps
-                getMovilizerWebAppSyncHandler().getWebAppsList();
+                Object[] webAppVersionsAsText = getMovilizerWebAppSyncHandler().getWebAppsList().toArray();
 
-                // get the selected WebApp from the SAP system
-                getMovilizerWebAppSyncHandler().getWebApp("HTML5_2015_06_09");
+                if (webAppVersionsAsText.length > 0) {
+                    WebAppVersion answerWebApp = (WebAppVersion) JOptionPane.showInputDialog(
+                            frame,
+                            "Please select an available WebApp Project from the list:",
+                            "Select WebApp Project",
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            webAppVersionsAsText,
+                            webAppVersionsAsText[0]);
+
+                    // get the selected WebApp from the SAP system
+                    getFileController().generateZIPFileFromByteArray(
+                            getMovilizerWebAppSyncHandler().getWebApp(answerWebApp.getId()), getSessionUsername(), answerWebApp.getId());
+
+                    JOptionPane.showMessageDialog(frame, "The requested project was successfully downloaded.", "Project Successfully Downloaded", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "There are no projects available in the selected SAP connection.", "No projects available", JOptionPane.WARNING_MESSAGE);
+                }
             }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Please maintain at least one valid SAP connection.", "No SAP Connection maintained", JOptionPane.WARNING_MESSAGE);
         }
     }
 
