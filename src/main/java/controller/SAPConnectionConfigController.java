@@ -339,6 +339,7 @@ public class SAPConnectionConfigController {
 
     /**
      * Deletes an existing SAP connection
+     *
      * @param sapConnection The SAP connection which should be deleted
      * @return Return true if the SAP connection was deleted successfully else false
      */
@@ -359,31 +360,35 @@ public class SAPConnectionConfigController {
                     for (int i = 0; i < nodeList.getLength(); i++) {
                         if (nodeList.item(i).getAttributes() != null) {
                             if (nodeList.item(i).getAttributes().getNamedItem("url") != null) {
-                                Node node = nodeList.item(i);
+                                if (nodeList.item(i).getAttributes().getNamedItem("url").getNodeValue().equals(sapConnection.getUrl())) {
+                                    Node node = nodeList.item(i);
 
-                                // TODO remode child node
+                                    // TODO remove child node
 
-                                    // write content into XML file
-                                    try {
-                                        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                                        Transformer transformer = transformerFactory.newTransformer();
-                                        DOMSource source = new DOMSource(document);
-                                        StreamResult result = new StreamResult(xmlFile);
-
-                                        transformer.transform(source, result);
-
-                                        System.out.println("success: sap connections controller --> sap connection was updated for user " + getUsername());
-                                        return true;
-                                    } catch (TransformerConfigurationException e) {
-                                        e.printStackTrace();
-                                    } catch (TransformerException e) {
-                                        e.printStackTrace();
-                                    }
+                                    node.getParentNode().removeChild(node);
                                 }
 
+                                // write content into XML file
+                                try {
+                                    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                                    Transformer transformer = transformerFactory.newTransformer();
+                                    DOMSource source = new DOMSource(document);
+                                    StreamResult result = new StreamResult(xmlFile);
+
+                                    transformer.transform(source, result);
+
+                                    System.out.println("success: sap connections controller --> sap connection was updated for user " + getUsername());
+                                    return true;
+                                } catch (TransformerConfigurationException e) {
+                                    e.printStackTrace();
+                                } catch (TransformerException e) {
+                                    e.printStackTrace();
+                                }
                             }
+
                         }
                     }
+                }
             } catch (SAXException e) {
                 e.printStackTrace();
             } catch (IOException e) {

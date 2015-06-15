@@ -15,6 +15,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of the Movilizer WebApp Webservice.
+ */
 public class MovilizerWebAppSyncHandler {
 
     private final String MOVILIZERWEBAPPWEBSERVICE = "/movilizer/webappsync/webapps/{webappid}";
@@ -149,13 +152,13 @@ public class MovilizerWebAppSyncHandler {
 
                 // create a new WebApp version
                 webAppVersions.add(new WebAppVersion(
-                        jsonObject.getString("mandt"),
-                        jsonObject.getString("id"),
-                        jsonObject.getString("version"),
-                        jsonObject.getString("name"),
-                        jsonObject.getString("description"),
-                        jsonObject.getString("hashcode"),
-                        jsonObject.getString("timestamp")
+                        jsonObject.getString("mandt").trim(),
+                        jsonObject.getString("id").trim(),
+                        jsonObject.getString("version").trim(),
+                        jsonObject.getString("name").trim(),
+                        jsonObject.getString("description").trim(),
+                        jsonObject.getString("hashcode").trim(),
+                        jsonObject.getString("timestamp").trim()
                 ));
             }
         } catch (JSONException e) {
@@ -163,6 +166,31 @@ public class MovilizerWebAppSyncHandler {
         }
 
         return webAppVersions;
+    }
+
+    /**
+     * Deletes the project from the current selected SAP system.
+     *
+     * @param project The project which should be deleted
+     */
+    public void deleteWebApp(String project) {
+        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE;
+
+        // authenticate the user to prepare the webservice call
+        authenticateUser();
+
+        // update session and parameters
+        updateCSRFToken();
+
+        // build HTTP request with header and content
+        HttpHeaders httpHeaders = generateHeaders("text/plain");
+        HttpEntity request = new HttpEntity<>(httpHeaders);
+
+        // send WebApp to SAP System
+        ResponseEntity<String> response = new RestTemplate().
+                exchange(url, HttpMethod.DELETE, request, String.class, project);
+
+        System.out.println(response);
     }
 
     /**

@@ -28,9 +28,11 @@ public class FileController {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             projectStructure.setProjectFile(new ProjectFile(fileChooser.getSelectedFile().getName(), fileChooser.getSelectedFile()));
             changeProjectStructureFromProject(projectStructure);
-        }
 
-        return fileChooser.getSelectedFile().getName();
+            return fileChooser.getSelectedFile().getName();
+        } else {
+            return "no file selected";
+        }
     }
 
     /**

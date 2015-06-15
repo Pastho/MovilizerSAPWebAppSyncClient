@@ -53,6 +53,8 @@ public class SAPConnectionPanel extends UserSessionWindow {
                 }
             }
         });
+
+        // update the combo box
         getSapConnectionConfigController().updateComboBox(getAvailableSAPConnectionsList());
 
         // SAP system connection
@@ -66,6 +68,12 @@ public class SAPConnectionPanel extends UserSessionWindow {
         // SAP system password
         JLabel sapSystemPasswordTitle = new JLabel("Password:");
         sapSystemPassword = new JPasswordField(getMovilizerWebAppSyncHandler().getSapConnection().getPassword());
+
+        // get the first available SAP connection from the list or keep default values
+        String firstEntry = getAvailableSAPConnectionsList().getItemAt(0);
+        if (firstEntry != null) {
+            updateInputFields(firstEntry);
+        }
 
         // create connection button
         JButton createButton = new JButton("Create");

@@ -40,6 +40,11 @@ public class CustomMenuBar extends JMenuBar {
         menuItem.addActionListener(getParentActionListener());
         filesMenu.add(menuItem);
 
+        menuItem = new JMenuItem("Delete Project from SAP");
+        menuItem.setActionCommand("menuItem-file-deleteProject");
+        menuItem.addActionListener(getParentActionListener());
+        filesMenu.add(menuItem);
+
         menuItem = new JMenuItem("Show Project Screen");
         menuItem.setActionCommand("menuItem-file-showProject");
         menuItem.addActionListener(getParentActionListener());
