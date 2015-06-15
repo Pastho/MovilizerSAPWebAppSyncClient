@@ -78,6 +78,6 @@ public class WebAppVersion {
 
     @Override
     public String toString() {
-        return "ID: " + id + "\t Version: " + version;
+        return "ID: " + getId() + "\t Version: " + getVersion();
     }
 }

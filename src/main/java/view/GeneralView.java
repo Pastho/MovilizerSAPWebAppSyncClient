@@ -167,7 +167,11 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 // if a SAP connection was selected try to put the WebApp to the SAP system
                 if (answer != null && !answer.isEmpty()) {
                     getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
-                    getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionUsername(), getSessionProject()));
+                    if (getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionUsername(), getSessionProject()))) {
+                        JOptionPane.showMessageDialog(frame, "The selected WebApp was transferred successfully.", "WebApp Transferred", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "The WebApp already exists in the selected SAP system.", "Duplicate WebApp in SAP System", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             } else {
                 JOptionPane.showMessageDialog(frame, "Please enter a SAP connection in the SAP connection menu.", "No available SAP connections", JOptionPane.WARNING_MESSAGE);

@@ -6,7 +6,10 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -14,6 +17,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.OK;
 
 /**
  * Implementation of the Movilizer WebApp Webservice.
@@ -60,8 +65,9 @@ public class MovilizerWebAppSyncHandler {
      * Puts a WebApp to the SAP system.
      *
      * @param webApp The WebApp which should be added to the SAP system
+     * @return Return true if the WebApp was successfully created else false
      */
-    public void putWebApp(File webApp) {
+    public boolean putWebApp(File webApp) {
         String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE;
         String filename = webApp.getName().split(".zip")[0];
 
@@ -79,16 +85,24 @@ public class MovilizerWebAppSyncHandler {
 
             HttpEntity request = new HttpEntity<>(byteArray, httpHeaders);
 
-            // send WebApp to SAP System
-            ResponseEntity<String> response = new RestTemplate().
-                    exchange(url, HttpMethod.PUT, request, String.class, filename);
+            try {
+                // send WebApp to SAP System
+                ResponseEntity<String> response = new RestTemplate().
+                        exchange(url, HttpMethod.PUT, request, String.class, filename);
 
-            // check the response
-            System.out.println(response);
+                System.out.println(response);
+                System.out.println("put response --> WebApp was created");
+                return true;
 
+            } catch (org.springframework.web.client.HttpClientErrorException ex) {
+                System.out.println("put response --> WebApp already exists");
+                return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
     /**
@@ -235,7 +249,7 @@ public class MovilizerWebAppSyncHandler {
         ResponseEntity<Object> response = new RestTemplate().
                 exchange(getSapConnection().getURLforCSRF(), HttpMethod.HEAD, request, Object.class);
 
-        if (response.getStatusCode() == HttpStatus.OK) {
+        if (response.getStatusCode() == OK) {
             setSessionCookies(response.getHeaders().get("set-cookie"));
             setCSRFToken(response.getHeaders().get("x-csrf-token").get(0));
             System.out.println("web-service-call: x-csrf-token received and stored");
