@@ -11,6 +11,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Login View which is used to Login and register User
+ */
 public class LoginView extends UserSessionWindow implements ActionListener {
 
     private JFrame frame;

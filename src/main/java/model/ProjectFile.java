@@ -2,6 +2,9 @@ package model;
 
 import java.io.File;
 
+/**
+ * POJO for Project Files
+ */
 public class ProjectFile {
 
     private File originalFile;

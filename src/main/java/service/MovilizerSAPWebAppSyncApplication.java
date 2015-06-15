@@ -2,6 +2,9 @@ package service;
 
 import view.LoginView;
 
+/**
+ * Main Application Class
+ */
 public class MovilizerSAPWebAppSyncApplication {
 
     /**

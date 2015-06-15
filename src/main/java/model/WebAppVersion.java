@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * POJO for WebApp Versions
+ */
 public class WebAppVersion {
 
     private String mandt;

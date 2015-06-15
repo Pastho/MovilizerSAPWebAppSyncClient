@@ -10,6 +10,9 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
 
+/**
+ * Security Service Class used for encryption and decryption
+ */
 public class SecurityService {
 
     private final String ALGORITHM = "AES/GCM/NoPadding";

@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * POJO for SAP Connections
+ */
 public class SAPConnection {
 
     private String url;

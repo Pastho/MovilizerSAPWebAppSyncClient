@@ -11,9 +11,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.nio.charset.Charset;
+import java.io.File;
+import java.io.IOException;
 
+/**
+ * User Configuration Class
+ */
 public class UserConfigService {
 
     private final String CONNECTIONFILE = "/connections.xml";
