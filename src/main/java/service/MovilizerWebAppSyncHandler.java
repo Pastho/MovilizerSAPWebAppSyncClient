@@ -32,6 +32,7 @@ public class MovilizerWebAppSyncHandler {
     private String csrfToken;
     private String userCredentials;
     private SAPConnection sapConnection;
+    private boolean isAuthenticated;
 
     public MovilizerWebAppSyncHandler(SAPConnection sapConnection) {
         this.sapConnection = sapConnection;
@@ -74,9 +75,6 @@ public class MovilizerWebAppSyncHandler {
         // authenticate the user to prepare the webservice call
         authenticateUser();
 
-        // update session and parameters
-        updateCSRFToken();
-
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders("application/octet-stream");
 
@@ -116,9 +114,6 @@ public class MovilizerWebAppSyncHandler {
         // authenticate the user to prepare the webservice call
         authenticateUser();
 
-        // update session and parameters
-        updateCSRFToken();
-
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders("text/plain");
         HttpEntity request = new HttpEntity<>(httpHeaders);
@@ -141,9 +136,6 @@ public class MovilizerWebAppSyncHandler {
 
         // authenticate the user to prepare the webservice call
         authenticateUser();
-
-        // update session and parameters
-        updateCSRFToken();
 
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders("text/plain");
@@ -193,9 +185,6 @@ public class MovilizerWebAppSyncHandler {
         // authenticate the user to prepare the webservice call
         authenticateUser();
 
-        // update session and parameters
-        updateCSRFToken();
-
         // build HTTP request with header and content
         HttpHeaders httpHeaders = generateHeaders("text/plain");
         HttpEntity request = new HttpEntity<>(httpHeaders);
@@ -214,7 +203,6 @@ public class MovilizerWebAppSyncHandler {
      */
     private HttpHeaders generateHeaders(String contentType) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + userCredentials);
         headers.add("x-csrf-token", getCSRFToken());
         headers.add("Content-Type", contentType);
 
@@ -234,8 +222,14 @@ public class MovilizerWebAppSyncHandler {
      * Authenticate an user by using the username and password from the SAP connection.
      */
     private void authenticateUser() {
-        userCredentials = new String(Base64.
-                encodeBase64((getSapConnection().getUsername() + ":" + getSapConnection().getPassword()).getBytes()));
+        if (!isAuthenticated) {
+            userCredentials = new String(Base64.
+                    encodeBase64((getSapConnection().getUsername() + ":" + getSapConnection().getPassword()).getBytes()));
+
+            updateCSRFToken();
+
+            isAuthenticated = true;
+        }
     }
 
     /**
