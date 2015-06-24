@@ -3,6 +3,7 @@ package view;
 import controller.FileController;
 import controls.*;
 import model.ProjectFile;
+import model.TransportRequest;
 import model.WebAppVersion;
 import service.MovilizerWebAppSyncHandler;
 
@@ -146,32 +147,66 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
     }
 
     /**
+     * Opens a selection screen for the maintained SAP connections.
+     *
+     * @return The selected SAP connection or NULL
+     */
+    private String selectSAPConnection() {
+        // get available SAP connections and show the dialog
+        Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
+
+        String answerSAPConnection = null;
+
+        if (sapConnections.length > 0) {
+            answerSAPConnection = (String) JOptionPane.showInputDialog(
+                    frame,
+                    "Please select an available SAP connection from the list:",
+                    "Select SAP Connection",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    sapConnections,
+                    sapConnections[0]);
+        }
+
+        return answerSAPConnection;
+    }
+
+    /**
      * Send a WebApp to the selected SAP connection.
      */
     private void sendWebApp() {
         if (getSessionProject() != null) {
 
-            // get available SAP connections and show the dialog
-            Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
+            String answerSAPConnection = selectSAPConnection();
 
-            if (sapConnections.length > 0) {
-                String answer = (String) JOptionPane.showInputDialog(
+            // if a SAP connection was selected try to put the WebApp to the SAP system
+            if (answerSAPConnection != null && !answerSAPConnection.isEmpty()) {
+                getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
+
+                Object[] availableTransportRequests = getMovilizerWebAppSyncHandler().getTransportRequestList().toArray();
+
+                TransportRequest answerTransportRequest = (TransportRequest) JOptionPane.showInputDialog(
                         frame,
-                        "Please select an available SAP connection from the list:",
-                        "Select SAP Connection",
+                        "Please select an available Transport Request from the list:",
+                        "Select Transport Request:",
                         JOptionPane.PLAIN_MESSAGE,
                         null,
-                        sapConnections,
-                        sapConnections[0]);
+                        availableTransportRequests,
+                        availableTransportRequests[0]);
 
-                // if a SAP connection was selected try to put the WebApp to the SAP system
-                if (answer != null && !answer.isEmpty()) {
-                    getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answer));
-                    if (getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionUsername(), getSessionProject()))) {
+                if (answerTransportRequest != null) {
+                    // getMovilizerWebAppSyncHandler().putWebApp(getFileController().readProjectFile(getSessionUsername(), getSessionProject()))
+                    if (getMovilizerWebAppSyncHandler().putWebAppWithParticipantAndTR(
+                            getFileController().readProjectFile(getSessionUsername(), getSessionProject()),
+                            "thomas.pasberg@movilizer.com",
+                            answerTransportRequest
+                    )) {
                         JOptionPane.showMessageDialog(frame, "The selected WebApp was transferred successfully.", "WebApp Transferred", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(frame, "The WebApp already exists in the selected SAP system.", "Duplicate WebApp in SAP System", JOptionPane.ERROR_MESSAGE);
                     }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "No Transport Request could selected.", "No Transport Requests Selected", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(frame, "Please enter a SAP connection in the SAP connection menu.", "No available SAP connections", JOptionPane.WARNING_MESSAGE);
@@ -185,48 +220,37 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
      * Opens a pop up where a WebApp project can be selected over an existing SAP connection.
      */
     private void getWebApp() {
-        // get available SAP connections and show the dialog
-        Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
 
-        if (sapConnections.length > 0) {
-            String answerSAPConnection = (String) JOptionPane.showInputDialog(
-                    frame,
-                    "Please select an available SAP connection from the list:",
-                    "Select SAP Connection",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    sapConnections,
-                    sapConnections[0]);
+        String answerSAPConnection = selectSAPConnection();
 
-            // if a SAP connection was selected try to put the WebApp to the SAP system
-            if (answerSAPConnection != null && !answerSAPConnection.isEmpty()) {
+        // if a SAP connection was selected try to put the WebApp to the SAP system
+        if (answerSAPConnection != null && !answerSAPConnection.isEmpty()) {
 
-                // set the selected SAP connection as the current SAP connection
-                getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
+            // set the selected SAP connection as the current SAP connection
+            getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
 
-                // get the list of available WebApps
-                Object[] webAppVersionsAsText = getMovilizerWebAppSyncHandler().getWebAppsList().toArray();
+            // get the list of available WebApps
+            Object[] webAppVersionsAsText = getMovilizerWebAppSyncHandler().getWebAppsList().toArray();
 
-                if (webAppVersionsAsText.length > 0) {
-                    WebAppVersion answerWebApp = (WebAppVersion) JOptionPane.showInputDialog(
-                            frame,
-                            "Please select an available WebApp Project from the list:",
-                            "Select WebApp Project for Receiving",
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            webAppVersionsAsText,
-                            webAppVersionsAsText[0]);
+            if (webAppVersionsAsText.length > 0) {
+                WebAppVersion answerWebApp = (WebAppVersion) JOptionPane.showInputDialog(
+                        frame,
+                        "Please select an available WebApp Project from the list:",
+                        "Select WebApp Project for Receiving",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        webAppVersionsAsText,
+                        webAppVersionsAsText[0]);
 
-                    if (answerWebApp != null) {
-                        // get the selected WebApp from the SAP system
-                        getFileController().generateZIPFileFromByteArray(
-                                getMovilizerWebAppSyncHandler().getWebApp(answerWebApp.getId()), getSessionUsername(), answerWebApp.getId());
+                if (answerWebApp != null) {
+                    // get the selected WebApp from the SAP system
+                    getFileController().generateZIPFileFromByteArray(
+                            getMovilizerWebAppSyncHandler().getWebApp(answerWebApp.getId()), getSessionUsername(), answerWebApp.getId());
 
-                        JOptionPane.showMessageDialog(frame, "The requested project was successfully downloaded.", "Project Successfully Downloaded", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(frame, "There are no projects available in the selected SAP connection.", "No projects available", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "The requested project was successfully downloaded.", "Project Successfully Downloaded", JOptionPane.INFORMATION_MESSAGE);
                 }
+            } else {
+                JOptionPane.showMessageDialog(frame, "There are no projects available in the selected SAP connection.", "No projects available", JOptionPane.WARNING_MESSAGE);
             }
         } else {
             JOptionPane.showMessageDialog(frame, "Please maintain at least one valid SAP connection.", "No SAP Connection maintained", JOptionPane.WARNING_MESSAGE);
@@ -237,47 +261,36 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
      * Deletes the selected WebApp from the selected SAP system.
      */
     private void deleteWebApp() {
-        // get available SAP connections and show the dialog
-        Object[] sapConnections = getSapConnectionPanel().getAvailableSAPConnections();
 
-        if (sapConnections.length > 0) {
-            String answerSAPConnection = (String) JOptionPane.showInputDialog(
-                    frame,
-                    "Please select an available SAP connection from the list:",
-                    "Select SAP Connection",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    sapConnections,
-                    sapConnections[0]);
+        String answerSAPConnection = selectSAPConnection();
 
-            // if a SAP connection was selected try to put the WebApp to the SAP system
-            if (answerSAPConnection != null && !answerSAPConnection.isEmpty()) {
+        // if a SAP connection was selected try to put the WebApp to the SAP system
+        if (answerSAPConnection != null && !answerSAPConnection.isEmpty()) {
 
-                // set the selected SAP connection as the current SAP connection
-                getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
+            // set the selected SAP connection as the current SAP connection
+            getMovilizerWebAppSyncHandler().setSapConnection(getSapConnectionPanel().getSAPConnection(answerSAPConnection));
 
-                // get the list of available WebApps
-                Object[] webAppVersionsAsText = getMovilizerWebAppSyncHandler().getWebAppsList().toArray();
+            // get the list of available WebApps
+            Object[] webAppVersionsAsText = getMovilizerWebAppSyncHandler().getWebAppsList().toArray();
 
-                if (webAppVersionsAsText.length > 0) {
-                    WebAppVersion answerWebApp = (WebAppVersion) JOptionPane.showInputDialog(
-                            frame,
-                            "Please select an available WebApp Project from the list:",
-                            "Select WebApp Project for Deleting",
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            webAppVersionsAsText,
-                            webAppVersionsAsText[0]);
+            if (webAppVersionsAsText.length > 0) {
+                WebAppVersion answerWebApp = (WebAppVersion) JOptionPane.showInputDialog(
+                        frame,
+                        "Please select an available WebApp Project from the list:",
+                        "Select WebApp Project for Deleting",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        webAppVersionsAsText,
+                        webAppVersionsAsText[0]);
 
-                    if (answerWebApp != null) {
-                        // delete the selected WebApp from the SAP system
-                        getMovilizerWebAppSyncHandler().deleteWebApp(answerWebApp.getId());
+                if (answerWebApp != null) {
+                    // delete the selected WebApp from the SAP system
+                    getMovilizerWebAppSyncHandler().deleteWebApp(answerWebApp.getId());
 
-                        JOptionPane.showMessageDialog(frame, "The requested project was successfully deleted.", "Project Successfully Deleted", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(frame, "There are no projects available in the selected SAP connection.", "No projects available", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "The requested project was successfully deleted.", "Project Successfully Deleted", JOptionPane.INFORMATION_MESSAGE);
                 }
+            } else {
+                JOptionPane.showMessageDialog(frame, "There are no projects available in the selected SAP connection.", "No projects available", JOptionPane.WARNING_MESSAGE);
             }
         } else {
             JOptionPane.showMessageDialog(frame, "Please maintain at least one valid SAP connection.", "No SAP Connection maintained", JOptionPane.WARNING_MESSAGE);
@@ -321,4 +334,5 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 System.err.println("error: on action handler was found");
         }
     }
+
 }
