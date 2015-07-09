@@ -245,7 +245,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
                 if (answerWebApp != null) {
                     // get the selected WebApp from the SAP system
                     getFileController().generateZIPFileFromByteArray(
-                            getMovilizerWebAppSyncHandler().getWebApp(answerWebApp.getId()), getSessionUsername(), answerWebApp.getId());
+                            getMovilizerWebAppSyncHandler().getWebApp(answerWebApp.getId(), answerWebApp.getVersion()), getSessionUsername(), answerWebApp.getId());
 
                     JOptionPane.showMessageDialog(frame, "The requested project was successfully downloaded.", "Project Successfully Downloaded", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -285,7 +285,7 @@ public class GeneralView extends UserSessionWindow implements ActionListener {
 
                 if (answerWebApp != null) {
                     // delete the selected WebApp from the SAP system
-                    getMovilizerWebAppSyncHandler().deleteWebApp(answerWebApp.getId());
+                    getMovilizerWebAppSyncHandler().deleteWebApp(answerWebApp.getId(), answerWebApp.getVersion());
 
                     JOptionPane.showMessageDialog(frame, "The requested project was successfully deleted.", "Project Successfully Deleted", JOptionPane.INFORMATION_MESSAGE);
                 }

@@ -29,7 +29,7 @@ public class MovilizerWebAppSyncHandler {
     private final String MOVILIZERWEBAPPWEBSERVICE_SIMPLE = "/movilizer/webappsync/webapps/{webappid}";
     private final String MOVILIZERWEBAPPWEBSERVICE_SIMPLE_TR = "/movilizer/webappsync/webapps/{webappid}/{transportrequest}";
     private final String MOVILIZERWEBAPPSWEBSERVICE_LIST = "/movilizer/webappsync/webapps";
-    private final String MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT = "/movilizer/webappsync/webapps/{webappid}/{participant}";
+    private final String MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT_TR_VERSION = "/movilizer/webappsync/webapps/{webappid}/{participant}/{transportrequest}/{version}";
     private final String MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT_TR = "/movilizer/webappsync/webapps/{webappid}/{participant}/{transportrequest}";
     private final String MOVILIZERWEBAPPWEBSERVICE_TRANSPORTREQUESTS = "/movilizer/webappsync/transportrequests/{username}";
 
@@ -158,7 +158,7 @@ public class MovilizerWebAppSyncHandler {
      * @return Return true if the WebApp was successfully created else false
      */
     public boolean putWebAppWithParticipant(File webApp, String participant) {
-        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT;
+        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT_TR;
         String filename = webApp.getName().split(".zip")[0];
 
         // authenticate the user to prepare the webservice call
@@ -175,7 +175,7 @@ public class MovilizerWebAppSyncHandler {
             try {
                 // send WebApp to SAP System
                 ResponseEntity<String> response = new RestTemplate().
-                        exchange(url, HttpMethod.PUT, request, String.class, filename, participant);
+                        exchange(url, HttpMethod.PUT, request, String.class, filename, participant, "NONE");
 
                 System.out.println(response);
                 System.out.println("put response --> WebApp was created");
@@ -240,8 +240,8 @@ public class MovilizerWebAppSyncHandler {
      *
      * @param project The requested WebApp
      */
-    public byte[] getWebApp(String project) {
-        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_SIMPLE;
+    public byte[] getWebApp(String project, String version) {
+        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT_TR_VERSION;
 
         // authenticate the user to prepare the webservice call
         authenticateUser();
@@ -252,7 +252,7 @@ public class MovilizerWebAppSyncHandler {
 
         // send WebApp to SAP System
         ResponseEntity<byte[]> response = new RestTemplate().
-                exchange(url, HttpMethod.GET, request, byte[].class, project);
+                exchange(url, HttpMethod.GET, request, byte[].class, project, "thomas.pasberg@movilizer.com", "NONE", version);
 
         return response.getBody();
     }
@@ -360,8 +360,8 @@ public class MovilizerWebAppSyncHandler {
      *
      * @param project The project which should be deleted
      */
-    public void deleteWebApp(String project) {
-        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_SIMPLE;
+    public void deleteWebApp(String project, String version) {
+        String url = sapConnection.getUrl() + MOVILIZERWEBAPPWEBSERVICE_PARTICIPANT_TR_VERSION;
 
         // authenticate the user to prepare the webservice call
         authenticateUser();
@@ -372,7 +372,7 @@ public class MovilizerWebAppSyncHandler {
 
         // send WebApp to SAP System
         ResponseEntity<String> response = new RestTemplate().
-                exchange(url, HttpMethod.DELETE, request, String.class, project);
+                exchange(url, HttpMethod.DELETE, request, String.class, project, "thomas.pasberg@movilizer.com", "NONE", version);
 
         System.out.println(response);
     }
